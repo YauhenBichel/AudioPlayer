@@ -6,6 +6,20 @@ This type of app has been identified as one that may violate one or more of the 
 5.2.3 - Facilitate illegal file sharing or include the ability to save, convert, or download media from third party sources without explicit authorization from those sources
 "
 
+Preview:
+
+![screen 1](./preview/IMG_7855.jpg)
+
+------
+
+![screen 2](./preview/IMG_7856.jpg)
+
+------
+
+![screen 3](./preview/IMG_7857.jpg)
+
+
+### development
 
 Need to remove files in document folder
 
