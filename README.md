@@ -1,6 +1,6 @@
 ClosePlayer - audio player for apple store.
 
-Unfortunately it can be published because of
+Unfortunately it can not be published because of
 "
 This type of app has been identified as one that may violate one or more of the following App Store Review Guidelines. Specifically, these types of apps often:
 5.2.3 - Facilitate illegal file sharing or include the ability to save, convert, or download media from third party sources without explicit authorization from those sources
