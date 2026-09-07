@@ -20,7 +20,7 @@ jobs:
         with:
           persist-credentials: true
 
-      - uses: YauhenBichel/readme-contributors@ad89c96e4f83262c40804087ffafcfe0e08ade06 # v1.6.0
+      - uses: YauhenBichel/readme-contributors@25e0b067b5edec34206283138657dc8a8713d89a # reuse captions
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
