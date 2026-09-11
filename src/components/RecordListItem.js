@@ -1,58 +1,51 @@
-import React, {Component} from 'react';
+import React, { memo } from 'react';
 import {
-	Text,
-	TouchableOpacity,
-	View,
-	Image
+  Pressable,
+  Text,
+  Image
 } from 'react-native';
-import Swipeout from 'react-native-swipeout';
-import {audioActiveSrc, audioSrc} from '../Constants';
+import { audioActiveSrc, audioSrc } from '../Constants';
+import { IconButton } from './IconButton';
 
-export class RecordListItem extends Component {
-	
-	constructor(props) {
-		super(props);
-	}
-	
-	_onPress = () => {
-		this.props.onPressItem(this.props.id);
-	};
-	
-	_onDelete = () => {
-		this.props.onDeleteItem(this.props.id);
-	};
-	
-	render() {
-		
-		let swipeoutBtns = [{
-			text: 'Delete',
-			backgroundColor: 'red',
-			onPress: () => { this._onDelete() }
-		}];
-		
-		const recordColor = this.props.selected === true ? "gray" : "white";
-		const textColor = this.props.selected === true ? "orange" : "gray";
-		const recordImageSrc = this.props.selected === true ? audioActiveSrc : audioSrc;
-		
-		return (
-			<Swipeout right={swipeoutBtns}>
-					<TouchableOpacity onPress={this._onPress}>
-						<View style={{
-							flexDirection: 'row',
-							backgroundColor: recordColor,
-							flex: 1,
-							textAlign: 'center',
-							justifyContent: 'flex-start',
-							alignItems: 'center',
-							overflow: 'hidden'
-						}}>
-							<Image style = {{padding: 10, width: 25, height: 25}} source={recordImageSrc}/>
-							<Text style = {{padding: 10, fontSize: 15, color: textColor}}>
-								{this.props.title}
-							</Text>
-						</View>
-					</TouchableOpacity>
-			</Swipeout>
-		);
-	}
-}
+export const RecordListItem = memo(function RecordListItem({ id, title, selected, onPressItem, onDeleteItem }) {
+  const recordColor = selected ? 'gray' : 'white';
+  const textColor = selected ? 'orange' : 'gray';
+  const recordImageSrc = selected ? audioActiveSrc : audioSrc;
+
+  return (
+    <Pressable
+      onPress={() => onPressItem(id)}
+      style={{
+        flexDirection: 'row',
+        backgroundColor: recordColor,
+        alignItems: 'center',
+        padding: 10,
+        overflow: 'hidden'
+      }}
+    >
+      <Image
+        style={{ width: 25, height: 25, padding: 10 }}
+        source={recordImageSrc}
+      />
+      <Text
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        style={{
+          flex: 1,
+          fontSize: 15,
+          color: textColor,
+          padding: 10,
+        }}
+      >
+        {title}
+      </Text>
+      <IconButton
+        iconName="trash"
+        iconSize={25}
+        color="gray"
+        onPress={() => onDeleteItem(id)}
+        accessibilityLabel={`Delete ${title}`}
+      />
+    </Pressable>
+  );
+});

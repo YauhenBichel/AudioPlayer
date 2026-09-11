@@ -1,0 +1,56 @@
+name: Android
+
+# One job, so a pull request costs one runner: lint, the unit tests, then a
+# debug APK. The build is the check that matters here. This app sat on React
+# Native 0.57 with jcenter until 2026 and could not be built at all; a job that
+# builds it on every change is how it stays buildable.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: lint, test, build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      # postinstall applies patches/react-native-track-player+4.1.2.patch; the
+      # build fails without it, so a missing patch shows up here, not on a phone.
+      - name: Install
+        run: npm ci
+
+      # Errors fail the build. The remaining warnings are inline styles in the
+      # original 2019 components: cosmetic, and not worth a gate that would only
+      # get switched off.
+      - name: Lint
+        run: npx eslint .
+
+      - name: Unit tests
+        run: npx jest --ci
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
