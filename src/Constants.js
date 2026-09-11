@@ -1,7 +1,3 @@
-const RNFS = require('react-native-fs');
-
-export const playlistDirPath = RNFS.DocumentDirectoryPath + "/playlists";
-
 export const soundwaveSrc = require("../images/soundwave.png");
 export const repeatSoundOnceSrc = require("../images/repeat-one.png");
 export const repeatSoundAlwaysSrc = require("../images/repeat-one-active.png");
