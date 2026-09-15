@@ -1,256 +1,94 @@
-ClosePlayer - audio player for apple store.
+# ClosePlayer
 
-Unfortunately it can not be published because of
-"
-This type of app has been identified as one that may violate one or more of the following App Store Review Guidelines. Specifically, these types of apps often:
-5.2.3 - Facilitate illegal file sharing or include the ability to save, convert, or download media from third party sources without explicit authorization from those sources
-"
+A small, calm audio player for the files already on your phone. Add songs from
+the device or a cloud drive, play them as a playlist, repeat one or all. That is
+the whole app, on purpose.
 
-Preview:
+It was written in 2019 as an iOS app and **now runs on Android** (React Native
+0.87, New Architecture). Apple rejected it at review under guideline 5.2.3,
+which covers apps that save media from third-party sources; a player for a
+person's own local files is an ordinary Android app.
 
 ![screen 1](./preview/IMG_7855.jpg)
 
-------
+## What it does
 
-![screen 2](./preview/IMG_7856.jpg)
+- **Add** one or more audio files through the Android system picker, which also
+  reaches Google Drive and other document providers. Each file is copied into
+  the app's own storage.
+- **Play** the playlist with previous / play-stop / next. Previous and next wrap
+  around at the ends.
+- **Repeat one** loops the current song; **repeat all** loops the playlist.
+- **Background playback** with a media notification and lock-screen controls,
+  so music keeps playing with the screen off.
+- **Delete** a song with the trash icon on its row, or everything with the trash
+  icon in the playlist header (it asks first).
+- The playlist is not kept between launches, as in the original app.
 
-------
+## Running it
 
-![screen 3](./preview/IMG_7857.jpg)
+Node 22, JDK 17 or 21, and the Android SDK (platform 37 is fetched by Gradle).
 
-
-### development
-
-Need to remove files in document folder
-
-- .xcodeproj vs .xcworkspace
- Navigate to the ios folder in your project,
- then open the .xcodeproj file, or if you are using CocoaPods open .xcworkspace,
-  within it using Xcode.
-
-- export PATH="/Users/yauhenbichel/.npm-packages/bin:$PATH"
-- react-native run-ios
-
-- https://www.npmjs.com/package/react-native-sound
-    - npm install react-native-sound --save
-    - react-native link react-native-sound
-
-
-- add index.ios.js - copy index.js
-
-- play in background
-```
-<key>UIBackgroundModes</key>
-    <array>
-        <string>audio</string>
-    </array>
+```bash
+npm install          # also applies patches/ (see below)
+npm start            # Metro, in one terminal
+npm run android      # build, install and launch on a device or emulator
 ```
 
-- mobile vs simulator
-```
-NSURL *jsCodeLocation;
-      // on my mobile
-      //jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-      // on simulator
-      jsCodeLocation = [[RCTBundleURLProvider sharedSettings]jsBundleURLForBundleRoot:@"index.ios" fallbackResource:nil];
+A standalone APK, JavaScript bundled inside:
+
+```bash
+cd android && ./gradlew assembleRelease
+# android/app/build/outputs/apk/release/app-release.apk
 ```
 
+The release build is signed with the debug keystore from the template. Before
+publishing, sign it with your own upload key.
 
-- for production
-    - remove NSExceptionDomains
+## Before a real release
 
+- **AdMob.** `app.json` and `src/config.js` hold Google's public *test*
+  identifiers, so development builds only ever show test ads. Put your own AdMob
+  app IDs in `app.json` and your banner unit in `src/config.js`. If the banner
+  cannot load, it hides itself rather than leaving an empty box.
+- **iOS** was regenerated from the React Native template, with background
+  audio enabled in `Info.plist`, but has not been built or run since the
+  upgrade. It needs `pod install` and a check on a device.
 
-- react-native-document-picker
-    - npm i --save react-native-document-picker
-    - react-native link
-    - You need to enable iCloud Documents to access iCloud
+## How it is built
 
-- use https://github.com/Elyx0/react-native-document-picker/tree/v3
-for supporting multiple files selecting
+| | |
+|---|---|
+| `App.js` | The screen: playlist, controls, repeat and delete. |
+| `src/services/player.js` | The only code that configures the player: set-up, repeat mode, wrap-around skip. |
+| `src/services/playbackService.js` | Handles the notification and lock-screen buttons, even with no screen open. |
+| `src/services/files.js` | Picks files, copies them into `records/`, deletes them. |
 
-- using v 3 with private npm pakcage
-    - https://docs.npmjs.com/creating-and-publishing-private-packages
-    - https://docs.npmjs.com/configuring-your-registry-settings-as-an-npm-enterprise-user#using-npmrc-to-manage-multiple-profiles-for-different-registries
+Playback is [react-native-track-player](https://github.com/doublesymmetry/react-native-track-player)
+4.1.2, which is the right tool for background audio on Android (a foreground
+media service) but predates the New Architecture. `patches/` fixes the three
+things that stop it working on React Native 0.87, applied automatically on
+install by patch-package:
 
+1. two nullability errors that stop it compiling against 0.87;
+2. its asynchronous methods returned a coroutine `Job`, which the TurboModule
+   interop rejects, so the whole module failed to load;
+3. it reached for `reactNativeHost` to send events, which throws under the New
+   Architecture; it now uses the service's own `reactContext`.
 
-    To install npmrc, on the command line, run
-    -    npm i npmrc -g
-    -    export PATH="/Users/yauhenbichel/.npm-packages/bin:$PATH"
-    -    npmrc -c eugenebichel
-    -    npm config set registry https://registry.eugenebichel-registry.npme.io/
+CI builds the APK on every pull request, so a missing patch or a broken build
+shows up there rather than on a phone.
 
-    - npm config set registry "https://registry.npmjs.com/"
+## Tests
 
-- No bundle URL present.
-  Make sure you’re running a packager server or have included
-  a .jsbundle file in your application bundle.
-
-    - set project settings - legacy
-
-    - remove build folder and run-ios again
-    - remove for production
-    ```
-    <key>NSExceptionDomains</key>
-    		<dict>
-    			<key>localhost</key>
-    			<dict>
-    				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-    				<true/>
-    			</dict>
-    		</dict>
-    ```
-
-
-    - kill process in 8081
-        - lsof -i :8081
-        - kill -9 <pid>
-
-    - react-native run-ios --configuration Release
-
-    - react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios
-
-- timeout for loading music
-https://github.com/zmxv/react-native-sound/issues/89
-
+```bash
+npx jest
 ```
 
-const callback = (error, sound) => {
-		if (error) {
-			console.warn("callback error");
-			console.warn(error);
-			return;
-		}
-
-		console.warn("callback");
-		console.warn(sound);
-	};
-
-	return setTimeout(() => {
-		let sound = new Sound(url, '', (error) => callback(error, sound));
-
-		setTimeout(() => {
-			sound.play((success) => {
-				console.warn("sound.play callback");
-				sound.release();
-			});
-		}, 500);
-
-		return sound
-	}, 500);
-
-```
-
-
-- console.warn for displaying console logs
-
-- npm install react-native-fs --save
-- react-native link react-native-fs
-
-
-- npm install --save-dev babel-plugin-module-resolver
-
-
-- main.jsbundle does not exist
-
-https://github.com/facebook/react-native/issues/15432
-
-his happens when there is no offline bundle file in your project, I had the same problem and this worked for me.
-
-If you're running on the device, check the Running On Device docs
-
-I added the below to my package.json file so I don't have to type it every time I want to generate an offline bundle
-
-"build:ios": "react-native bundle --entry-file='index.ios.js' --bundle-output='./ios/YourAppName/main.jsbundle'
---dev=false --platform='ios' --assets-dest='./'"
-And you can run it like this npm run build:ios
-
-You'll see the main.jsbundle file generated inside your ios/YourAppName directory
-
-Next, open your project using XCode, right click on your project name then click Add Files to "YourProjectName",
-choose the main.jsbundle file that was generated, and then build again.
-
-That should do it.
-
-
-react-native bundle --platform ios --assets-dest ./ --dev false --entry-file index.ios.js
---bundle-output ./ios/AudioPlayer/main.jsbundle
-
-When you are generating bundle , Also put --assets-dest ./
-"react-native bundle --platform ios --assets-dest ./ --dev false --entry-file index.ios.js --bundle-output
-iOS/main.jsbundle"
-It will generate main.jsbundle and Assets folder . Go to your Xcode right click add files to project
-and add main.jsbundle file to project. Also drag and drop Assets folder and select create by reference
-(note: do not select create group).
-i was using react 0.33, main.jsbundle is using assets(small a) folder but generating Assets(Caps A).
- I just changed the generated folder from Assets to assets and import it to xcode and it start working
-
---------------------------
-
-Realm is not supporting node v11.0 yet
-
-node v = 10.13.0
-npm install -g node@10.13.0
-
-brew install node@10
-
-nvm install 10 --reinstall-packages-from=node
-
-- yarn add react-native-queue / npm i --save react-native-queue
-- react-native link realm realm@2.19.1
-- yarn add react-native-background-task / npm i --save react-native-background-task
-- react-native link react-native-background-task
-- yarn add react-native-background-fetch@2.0.x / npm i --save react-native-background-fetch@2.0.x
-- react-native link react-native-background-fetch
-
-
-react-native: export PATH="/Users/yauhenbichel/.npm-packages/bin:$PATH"
-node: export PATH="/usr/local/opt/node@10/bin:$PATH"
-export PATH="/usr/local/opt/node@10/bin:$PATH" >> ~/.bash_profile
-nvm: . ~/.nvm/nvm.sh
-
--------------
-nvm use node
-nvm alias default node
--------------
-
-node@10 is keg-only, which means it was not symlinked into /usr/local,
-because this is an alternate version of another formula.
-
-If you need to have node@10 first in your PATH run:
-  echo 'export PATH="/usr/local/opt/node@10/bin:$PATH"' >> ~/.bash_profile
-
-For compilers to find node@10 you may need to set:
-  export LDFLAGS="-L/usr/local/opt/node@10/lib"
-  export CPPFLAGS="-I/usr/local/opt/node@10/include"
-
-------------
-
-npm install --save react-native-modal
-
--------------
-
-yarn add react-native-background-timer / npm i --save react-native-background-timer
-react-native link
-
---------------
-
-npm install --save utf8
-
--------------
-
-npm install --save react-native-swipeout
-
--------------
-
----
-
-## Contributors
-
-Thank you to everyone who has helped this project. Your code, reviews, issues, and pull requests are appreciated.
-
-- [@YauhenBichel](https://github.com/YauhenBichel)
-
-See the [full contributor graph](https://github.com/YauhenBichel/AudioPlayer/graphs/contributors).
+The unit tests pin the two bugs that only showed up on a real device: picking
+several files at once lost every file after the first (they share one copy
+folder, and it was deleted too early), and "next" before anything had played
+did arithmetic on `undefined`. Putting either bug back makes its test fail.
 
 ## Contributors
 

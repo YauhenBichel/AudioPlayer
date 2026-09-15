@@ -1,35 +1,44 @@
 {
   "name": "AudioPlayer",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "lint": "eslint .",
     "test": "jest",
-    "build:ios": "react-native bundle --entry-file='index.ios.js' --bundle-output='./ios/AudioPlayer/main.jsbundle' --dev=false --platform='ios' --assets-dest='./'"
+    "postinstall": "patch-package"
   },
   "dependencies": {
-    "react": "16.6.3",
-    "react-native": "0.57.8",
-    "react-native-admob": "^2.0.0-beta.5",
-    "react-native-background-fetch": "^2.0.8",
-    "react-native-background-task": "^0.2.1",
-    "react-native-background-timer": "^2.1.1",
-    "react-native-document-picker": "^2.2.0",
-    "react-native-fs": "^2.13.2",
-    "react-native-modal": "^7.0.2",
-    "react-native-queue": "^1.2.1",
-    "react-native-sound": "^0.10.9",
-    "react-native-swipeout": "^2.3.6",
-    "react-native-vector-icons": "^6.1.0",
-    "utf8": "^3.0.0"
+    "@dr.pogodin/react-native-fs": "2.40.2",
+    "@react-native-documents/picker": "12.0.2",
+    "@react-native-vector-icons/fontawesome": "13.1.4",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
+    "react-native-google-mobile-ads": "16.5.0",
+    "react-native-safe-area-context": "5.9.1",
+    "react-native-track-player": "4.1.2"
   },
   "devDependencies": {
-    "babel-jest": "23.6.0",
-    "jest": "23.6.0",
-    "metro-react-native-babel-preset": "0.48.5",
-    "react-test-renderer": "16.6.3"
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
+    "@react-native/babel-preset": "0.87.1",
+    "@react-native/eslint-config": "0.87.1",
+    "@react-native/jest-preset": "0.87.1",
+    "@react-native/metro-config": "0.87.1",
+    "@types/jest": "^29.5.13",
+    "eslint": "^8.19.0",
+    "jest": "^29.6.3",
+    "patch-package": "8.0.1",
+    "prettier": "2.8.8",
+    "react-test-renderer": "19.2.3"
   },
-  "jest": {
-    "preset": "react-native"
+  "engines": {
+    "node": ">= 22.11.0"
   }
 }

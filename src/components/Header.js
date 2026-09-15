@@ -1,9 +1,5 @@
-import React, {Component} from 'react';
-import {
-	Text,
-	Image,
-	View
-} from 'react-native';
+import React from 'react';
+import { Text, Image, View } from 'react-native';
 import {audioAlbomActiveSrc} from "../Constants";
 
 export const Header = ({children}) => {
